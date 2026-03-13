@@ -1,15 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TokenData(BaseModel):
-    username: str | None = None
+    email: str | None = None
 
 
-class User(BaseModel):
-    username: str
+class UserPublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     email: str
+    name: str | None = None
+    is_admin: bool = False
     disabled: bool = False
-
-
-class UserInDB(User):
-    hashed_password: str

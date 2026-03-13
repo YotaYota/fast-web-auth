@@ -1,13 +1,15 @@
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Form, Request, Response, status
+from fastapi import APIRouter, Depends, Form, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlmodel import Session
 
-from auth.service import authenticate_user, create_access_token
-from auth.templates import templates
+from auth.service import authenticate_user, create_access_token, create_refresh_token
+from templates import templates
 from config import settings
-from db.fake import fake_users_db
+from db.database import get_session
+
 
 router = APIRouter()
 
@@ -20,10 +22,11 @@ async def login_page(request: Request):
 @router.post("/login")
 async def login(
     request: Request,
-    username: Annotated[str, Form()],
+    email: Annotated[str, Form()],
     password: Annotated[str, Form()],
+    session: Annotated[Session, Depends(get_session)],
 ):
-    user = authenticate_user(fake_users_db, username, password)
+    user = authenticate_user(session, email, password)
     if not user:
         return templates.TemplateResponse(
             "login.html",
@@ -31,9 +34,20 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
     access_token = create_access_token(
-        data={"sub": user.username},
+        data={"sub": user.email},
         expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
     )
+    refresh_token, refresh_token_expires_at = create_refresh_token(
+        data={"sub": user.email},
+    )
+
+    # Store refresh token in DB
+    user.refresh_token = refresh_token
+    user.refresh_token_expires_at = refresh_token_expires_at
+    user.last_login = datetime.now(timezone.utc)
+    session.add(user)
+    session.commit()
+
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
         key="access_token",
@@ -41,7 +55,7 @@ async def login(
         httponly=True,  # no JS access
         secure=settings.cookie_secure,  # HTTPS only when True
         samesite="lax",  # your domain only
-        max_age=60 * 60 * 24 * 7,  # 7 days
+        max_age=60 * 15,  # 15 minutes
     )
     return response
 

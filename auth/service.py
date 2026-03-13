@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import jwt
 from pwdlib import PasswordHash
+from sqlmodel import Session, select
 
-from auth.models import UserInDB
 from config import settings
+from db.models import User
 
 
 password_hash = PasswordHash.recommended()
@@ -19,15 +21,13 @@ def get_password_hash(password: str) -> str:
     return password_hash.hash(password)
 
 
-def get_user(db: dict, username: str) -> UserInDB | None:
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-    return None
+def get_user(session: Session, email: str) -> User | None:
+    statement = select(User).where(User.email == email)
+    return session.exec(statement).first()
 
 
-def authenticate_user(fake_db: dict, username: str, password: str) -> UserInDB | None:
-    user = get_user(fake_db, username)
+def authenticate_user(session: Session, email: str, password: str) -> User | None:
+    user = get_user(session, email)
     if not user:
         verify_password(password, DUMMY_HASH)  # To prevent timing attacks
         return None
@@ -36,14 +36,18 @@ def authenticate_user(fake_db: dict, username: str, password: str) -> UserInDB |
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.secret_key, algorithm=settings.algorithm
-    )
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+
+def create_refresh_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> tuple[str, datetime]:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=settings.refresh_token_expire_days))
+    to_encode.update({"exp": expire})
+    token = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return token, expire

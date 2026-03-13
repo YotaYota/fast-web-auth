@@ -3,13 +3,12 @@ from typing import Annotated
 import jwt
 from fastapi import Cookie, Depends, HTTPException, status
 from jwt.exceptions import InvalidTokenError
+from sqlmodel import Session
 
-from auth.models import TokenData, User
+from auth.models import TokenData, UserPublic
 from auth.service import get_user
 from config import settings
-
-# Temporary until we have a real database
-from db.fake import fake_users_db
+from db.database import get_session
 
 
 # Extract a cookie named exactly "access_token" (by parameter name)
@@ -29,7 +28,8 @@ def get_token_from_cookie(access_token: Annotated[str | None, Cookie()] = None) 
 
 async def get_current_user(
     token: Annotated[str, Depends(get_token_from_cookie)],
-) -> User:
+    session: Annotated[Session, Depends(get_session)],
+) -> UserPublic:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -40,23 +40,23 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        username: str | None = payload.get("sub")
-        if username is None:
+        email: str | None = payload.get("sub")
+        if email is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(email=email)
     except InvalidTokenError:
         raise credentials_exception
-    if token_data.username is None:
+    if token_data.email is None:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(session, email=token_data.email)
     if user is None:
         raise credentials_exception
-    return user
+    return UserPublic.model_validate(user)
 
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> User:
+    current_user: Annotated[UserPublic, Depends(get_current_user)],
+) -> UserPublic:
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
