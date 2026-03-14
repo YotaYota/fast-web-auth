@@ -36,7 +36,9 @@ def authenticate_user(session: Session, email: str, password: str) -> User | Non
     return user
 
 
-def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_delta: timedelta | None = None
+) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -45,9 +47,14 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
 
-def create_refresh_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> tuple[str, datetime]:
+
+def create_refresh_token(
+    data: dict[str, Any], expires_delta: timedelta | None = None
+) -> tuple[str, datetime]:
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=settings.refresh_token_expire_days))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(days=settings.refresh_token_expire_days)
+    )
     to_encode.update({"exp": expire})
     token = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return token, expire
