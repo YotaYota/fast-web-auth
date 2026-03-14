@@ -11,8 +11,8 @@ create_db_and_tables()
 
 with Session(engine) as session:
     user = User(
-        email="test@test.com",
-        hashed_password=get_password_hash("abc"),
+        email="a@b.com",
+        hashed_password=get_password_hash("secret"),
         name="Test User",
     )
     session.add(user)
