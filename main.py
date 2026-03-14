@@ -2,9 +2,12 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from auth.dependencies import get_current_active_user
 from auth.models import UserPublic
+from auth.rate_limit import limiter
 from auth.router import router as auth_router
 from templates import templates
 from db.database import create_db_and_tables
@@ -20,8 +23,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(auth_router)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(RefreshTokenMiddleware)
+app.include_router(auth_router)
 
 
 @app.get("/")

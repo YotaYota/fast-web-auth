@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Form, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session
 
+from auth.rate_limit import limiter
 from auth.service import (
     authenticate_user,
     get_user,
@@ -28,6 +29,7 @@ async def login_page(request: Request):
 
 
 @router.post("/login")
+@limiter.limit("5/minute")
 async def login(
     request: Request,
     email: Annotated[str, Form()],
