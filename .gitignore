@@ -9,5 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# .env files
 .env.*
 !.env.example
+
+# local db
+database.db

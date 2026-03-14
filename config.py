@@ -25,7 +25,8 @@ class Settings(BaseSettings):
         env_file=f".env.{env}",  # default to .env.local
         env_file_encoding="utf-8",
     )
-
+    app_env: str = env
+    database_url: str = Field(default=...)
     secret_key: str = Field(default=...)  # openssl rand -hex 32
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15

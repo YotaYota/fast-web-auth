@@ -1,9 +1,10 @@
 from sqlmodel import create_engine, Session, SQLModel
 
-DATABASE_URL = "sqlite:///./database.db"
+from config import settings
 
-# ehco=True will log all the SQL statements
-engine = create_engine(DATABASE_URL, echo=True)
+
+# echo=True logs all SQL statements (disabled in prod)
+engine = create_engine(settings.database_url, echo=settings.app_env != "prod")
 
 
 def create_db_and_tables():
