@@ -6,11 +6,16 @@ uv sync
 
 ## Environment setup
 
-Copy the example env file and fill in your secret key:
+Create an env file and fill in your secret key:
 
 ```sh
-cp .env.example .env.local
-openssl rand -hex 32  # paste the output as SECRET_KEY in .env.local
+touch .env.local
+```
+
+Create a secret key with `openssl rand -hex 32`
+
+```
+SECRET_KEY=<output from openssl rand -hex 32>
 ```
 
 ## Development
@@ -22,7 +27,7 @@ uv run fastapi dev --reload
 ### Add test user
 
 ```sh
-uv run python -m scripts.create_test_user
+uv run create-test-user
 ```
 
 Then log in with

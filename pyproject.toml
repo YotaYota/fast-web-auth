@@ -19,5 +19,15 @@ dev = [
     "ruff>=0.15.6",
 ]
 
+[build-system]
+requires = ["flit_core>=3.4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "scripts"
+
+[project.scripts]
+create-test-user = "scripts.create_test_user:main"
+
 [tool.fastapi]
 entrypoint = "main:app"
