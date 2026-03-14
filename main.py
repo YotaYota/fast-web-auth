@@ -8,6 +8,7 @@ from auth.models import UserPublic
 from auth.router import router as auth_router
 from templates import templates
 from db.database import create_db_and_tables
+from auth.middleware import RefreshTokenMiddleware
 
 
 @asynccontextmanager
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(auth_router)
+app.add_middleware(RefreshTokenMiddleware)
 
 
 @app.get("/")

@@ -5,7 +5,7 @@ from fastapi import Cookie, Depends, HTTPException, status
 from jwt.exceptions import InvalidTokenError
 from sqlmodel import Session
 
-from auth.models import TokenData, UserPublic
+from auth.models import UserPublic
 from auth.service import get_user
 from config import settings
 from db.database import get_session
@@ -43,12 +43,10 @@ async def get_current_user(
         email: str | None = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
     except InvalidTokenError:
         raise credentials_exception
-    if token_data.email is None:
-        raise credentials_exception
-    user = get_user(session, email=token_data.email)
+
+    user = get_user(session, email=email)
     if user is None:
         raise credentials_exception
     return UserPublic.model_validate(user)
