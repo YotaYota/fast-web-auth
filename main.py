@@ -10,7 +10,7 @@ from auth.models import UserPublic
 from auth.rate_limit import limiter
 from auth.router import router as auth_router
 from templates import templates
-from db.database import create_db_and_tables
+from db.database import create_db_and_tables, seed_admin_user
 from auth.middleware import RefreshTokenMiddleware
 
 
@@ -18,6 +18,7 @@ from auth.middleware import RefreshTokenMiddleware
 async def lifespan(app: FastAPI):
     # startup
     create_db_and_tables()
+    seed_admin_user()
     yield
     # shutdown (nothing to do yet)
 

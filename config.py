@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     cookie_secure: bool = True  # Set to True in production (HTTPS only)
+    admin_email: str | None = None
+    admin_password: str | None = None
 
 
 settings = Settings()
@@ -39,3 +41,13 @@ settings = Settings()
 assert len(settings.secret_key) >= 32, (
     "SECRET_KEY is too short! Generate one with: openssl rand -hex 32"
 )
+
+# Admin seed validation: both or neither, and password must be strong enough
+_has_email = settings.admin_email is not None
+_has_password = settings.admin_password is not None
+if _has_email != _has_password:
+    raise ValueError(
+        "ADMIN_EMAIL and ADMIN_PASSWORD must both be set, or both be unset."
+    )
+if _has_password and len(settings.admin_password) < 12:
+    raise ValueError("ADMIN_PASSWORD must be at least 12 characters.")

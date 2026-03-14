@@ -46,4 +46,13 @@ Set the following environment variables via your hosting platform:
 - `SECRET_KEY` - generate with `openssl rand -hex 32`
 - `COOKIE_SECURE=True`
 
+### Admin user (optional)
+
+To seed an admin user on startup, set both:
+
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD` - must be at least 12 characters
+
+The admin is created (or updated) each time the app starts. To rotate the password, change the env var and redeploy.
+
 Do **not** commit `.env.local` or create `.env.prod` - secrets should be injected by the platform, not stored in files.
