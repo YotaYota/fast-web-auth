@@ -53,9 +53,9 @@ async def login(
         key="access_token",
         value=access_token,
         httponly=True,  # no JS access
-        secure=settings.cookie_secure,  # HTTPS only when True
         samesite="lax",  # your domain only
-        max_age=60 * 15,  # 15 minutes
+        secure=settings.cookie_secure,
+        max_age=60 * settings.access_token_expire_minutes,
     )
     return response
 
