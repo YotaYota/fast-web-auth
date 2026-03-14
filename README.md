@@ -22,7 +22,7 @@ uv run fastapi dev --reload
 ### Add test user
 
 ```sh
-uv run python scripts/create_user.py
+uv run python -m scripts.create_test_user
 ```
 
 Then log in with
