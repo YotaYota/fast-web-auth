@@ -22,7 +22,7 @@ uv run fastapi dev --reload
 ### Add test user
 
 ```sh
-uv run python scripts/add_test_user.py
+uv run python scripts/create_user.py
 ```
 
 Then log in with
@@ -37,6 +37,7 @@ at localhost:8000/login
 Set the following environment variables via your hosting platform:
 
 - `APP_ENV=prod`
+- `DATABASE_URL`
 - `SECRET_KEY` - generate with `openssl rand -hex 32`
 - `COOKIE_SECURE=True`
 
