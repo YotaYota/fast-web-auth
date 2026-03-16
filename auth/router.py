@@ -25,7 +25,7 @@ router = APIRouter()
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 
 @router.post("/login")
@@ -39,8 +39,9 @@ async def login(
     user = authenticate_user(session, email, password)
     if not user:
         return templates.TemplateResponse(
+            request,
             "login.html",
-            {"request": request, "error": "Incorrect username or password"},
+            {"error": "Incorrect username or password"},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
     access_token = create_access_token(
@@ -69,9 +70,7 @@ async def logout(
     session: Annotated[Session, Depends(get_session)],
 ):
     data = {"login_url": router.url_path_for("login_page")}
-    response = templates.TemplateResponse(
-        "logout.html", {"request": request, "data": data}
-    )
+    response = templates.TemplateResponse(request, "logout.html", {"data": data})
 
     # Invalidate refresh_token in DB
     access_token = request.cookies.get("access_token")

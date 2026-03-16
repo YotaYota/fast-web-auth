@@ -33,7 +33,7 @@ app.include_router(auth_router)
 
 @app.get("/")
 async def landing(request: Request):
-    return templates.TemplateResponse("welcome.html", {"request": request})
+    return templates.TemplateResponse(request, "welcome.html")
 
 
 @app.get("/users/me")
