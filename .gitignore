@@ -15,3 +15,4 @@ wheels/
 
 # local db
 database.db
+test_database.db

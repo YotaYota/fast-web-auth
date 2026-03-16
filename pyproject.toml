@@ -17,6 +17,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.0",
+    "pytest>=8.0.0",
     "ruff>=0.15.6",
 ]
 
@@ -29,6 +31,9 @@ name = "scripts"
 
 [project.scripts]
 create-test-user = "scripts.create_test_user:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.fastapi]
 entrypoint = "main:app"
